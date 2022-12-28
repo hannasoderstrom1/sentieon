@@ -10,10 +10,13 @@ __license__ = "GPL-3"
 rule sentieon_bwa_mem:
     input:
         reads=lambda wildcards: alignment_input(wildcards),
+        reference=config.get("sentieon", {}).get("reference", ""),
     output:
-        "sentieon/bwa_mem/{sample}_{flowcell}_{lane}_{barcode}_{type}.output.txt",
+        bam = "sentieon/bwa_mem/{sample}_{flowcell}_{lane}_{barcode}_{type}.bam",
+        #"sentieon/bwa_mem/{sample}_{flowcell}_{lane}_{barcode}_{type}.output.txt",
     params:
         extra=config.get("sentieon", {}).get("extra", ""),
+        sentieon="/sentieon-genomics-201911/bin/sentieon", #PATH TO SENTIEON??
     log:
         "sentieon/bwa_mem/{sample}_{flowcell}_{lane}_{barcode}_{type}.output.log",
     benchmark:
@@ -35,12 +38,16 @@ rule sentieon_bwa_mem:
     message:
         "{rule}: Do stuff on sentieon/{rule}/{wildcards.sample}_{wildcards.type}.input"
     shell:
-        "echo {input} > {output}"
+        #"echo {input} > {output}"
+        "{params.sentieon} bwa mem "
+            "-M -R '@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tPL:ILLUMINA' "
+            "-t {threads} {input.reference} {input.reads} "
+        "| {params.sentieon} util sort -o {output.bam} -t {threads} --sam2bam -i -"
 
 rule sentieon_dedup:
     input:
         lambda wildcards: [
-            "sentieon/bwa_mem/{sample}_%s_%s_%s_{type}.output.txt" % (u.flowcell, u.lane, u.barcode)
+            "sentieon/bwa_mem/{sample}_%s_%s_%s_{type}.bam" % (u.flowcell, u.lane, u.barcode)
             for u in get_units(units, wildcards)
         ],
     output:
