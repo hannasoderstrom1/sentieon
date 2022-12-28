@@ -10,3 +10,8 @@
 
  fastp_pe:
    container: "docker://hydragenetics/fastp:0.20.1"
+
+ sentieon:
+   container: "/apps/bio/singularities/wgs_somatic/sentieon_peta_201911_hg38_new220503.simg"
+   reference: "/apps/bio/dependencies/wgs_somatic/hg38/sentieon/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
+   sentieon: "/sentieon-genomics-201911/bin/sentieon"
