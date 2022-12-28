@@ -1,7 +1,12 @@
 ---
 
- resources: "resources.yaml"
+ resources: "config/resources.yaml"
  samples: "samples.tsv"
  units: "units.tsv"
 
- default_container: "docker://hydragenetics/common:0.1.1"
+ default_container: "docker://hydragenetics/common:0.1.9"
+
+ trimmer_software: "fastp_pe"
+
+ fastp_pe:
+   container: "docker://hydragenetics/fastp:0.20.1"
