@@ -51,9 +51,12 @@ rule sentieon_dedup:
             for u in get_units(units, wildcards)
         ],
     output:
-        "sentieon/dedup/{sample}_{type}.output.txt",
+        "sentieon/dedup/{sample}_{type}_DEDUP.bam",
+        "sentieon/dedup/{sample}_{type}_DEDUP.txt",
+        #"sentieon/dedup/{sample}_{type}.output.txt",
     params:
         extra=config.get("sentieon", {}).get("extra", ""),
+        sentieon="/sentieon-genomics-201911/bin/sentieon", #PATH TO SENTIEON?? Get from config instead??
     log:
         "sentieon/dedup/{sample}_{type}.output.log",
     benchmark:
@@ -75,4 +78,17 @@ rule sentieon_dedup:
     message:
         "{rule}: Do stuff on sentieon/{rule}/{wildcards.sample}_{wildcards.type}.input"
     shell:
-        "echo {input} > {output}"
+        #"echo {input} > {output}"
+        "{params.sentieon} driver -t {threads} "
+            "-i {input} "
+            "--algo LocusCollector "
+            "--fun score_info "
+            "sentieon/dedup/{wildcards.sample}_{wildcards.type}_DEDUP_score.txt ;"
+        "{params.sentieon} driver "
+            "-t {threads} "
+            "-i {input} "
+            "--algo Dedup "
+            "--rmdup "
+            "--score_info sentieon/dedup/{wildcards.sample}_{wildcards.type}_DEDUP_score.txt "
+            "--metrics sentieon/dedup/{wildcards.sample}_{wildcards.type}_DEDUP.txt "
+            "sentieon/dedup/{wildcards.sample}_{wildcards.type}_DEDUP.bam"
