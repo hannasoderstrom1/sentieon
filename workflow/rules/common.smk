@@ -67,9 +67,6 @@ elif config.get("trimmer_software", "None") == "None":
         get_fastq_file(units, wildcards, "fastq2"),
     ]
 
-#print(units)
-#print(sample for sample in get_samples(samples))
-#print(f'samples {samples}')
 
 def compile_output_list(wildcards: snakemake.io.Wildcards):
     output_files = [
@@ -79,24 +76,3 @@ def compile_output_list(wildcards: snakemake.io.Wildcards):
     ]
     return output_files
 
-    #output_files = [
-    #    "sentieon/sentieon/{}_{}_{}_{}_{}.output.txt".format(sample, flowcell, lane, barcode, t)
-    #    for sample in get_samples(samples)
-    #    for t in get_unit_types(units, sample)
-    #    for flowcell in get_units(units, wildcards)
-    #    for lane in get_units(units, wildcards)
-    #    for barcode in get_units(units, wildcards)
-    #]
-    #return output_files
-
-    #output_files = lambda wildcards: [
-    #    "sentieon/sentieon/{sample}_{flowcell}_{lane}_{barcode}_{type}.output.txt"
-    #]
-    #return output_files
-
-    #output_files = expand(
-    #    "sentieon/sentieon/{{sample}}_{flowcell_lane_barcode}_{{type}}.output.txt",
-    #    flowcell_lane_barcode=["{}_{}_{}".format(unit.flowcell, unit.lane, unit.barcode) for unit in get_units(units, wildcards, wildcards.type)
-    #    ],
-    #)
-    #return output_files
