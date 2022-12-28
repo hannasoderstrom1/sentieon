@@ -1,3 +1,6 @@
+# vim: syntax=python tabstop=4 expandtab
+# coding: utf-8
+
 __author__ = "Hanna Soderstrom"
 __copyright__ = "Copyright 2022, Hanna Soderstrom"
 __email__ = "hanna.soderstrom@gu.se"
@@ -42,9 +45,58 @@ wildcard_constraints:
     type="N|T|R",
 
 
-def compile_output_list(wildcards):
-    return [
-        "sentieon/dummy/%s_%s.dummy.txt" % (sample, t)
+if config.get("trimmer_software", None) == "fastp_pe":
+    merged_input = lambda wildcards: expand(
+        "prealignment/fastp_pe/{{sample}}_{flowcell_lane_barcode}_{{type}}_{{read}}.fastq.gz",
+        flowcell_lane_barcode=[
+            "{}_{}_{}".format(unit.flowcell, unit.lane, unit.barcode) for unit in get_units(units, wildcards, wildcards.type)
+        ],
+    )
+else:
+    merged_input = lambda wildcards: get_fastq_files(units, wildcards)
+
+
+if config.get("trimmer_software", "None") == "fastp_pe":
+    alignment_input = lambda wilcards: [
+        "prealignment/fastp_pe/{sample}_{flowcell}_{lane}_{barcode}_{type}_fastq1.fastq.gz",
+        "prealignment/fastp_pe/{sample}_{flowcell}_{lane}_{barcode}_{type}_fastq2.fastq.gz",
+    ]
+elif config.get("trimmer_software", "None") == "None":
+    alignment_input = lambda wildcards: [
+        get_fastq_file(units, wildcards, "fastq1"),
+        get_fastq_file(units, wildcards, "fastq2"),
+    ]
+
+#print(units)
+#print(sample for sample in get_samples(samples))
+#print(f'samples {samples}')
+
+def compile_output_list(wildcards: snakemake.io.Wildcards):
+    output_files = [
+        "sentieon/dedup/{}_{}.output.txt".format(sample, t)
         for sample in get_samples(samples)
         for t in get_unit_types(units, sample)
     ]
+    return output_files
+
+    #output_files = [
+    #    "sentieon/sentieon/{}_{}_{}_{}_{}.output.txt".format(sample, flowcell, lane, barcode, t)
+    #    for sample in get_samples(samples)
+    #    for t in get_unit_types(units, sample)
+    #    for flowcell in get_units(units, wildcards)
+    #    for lane in get_units(units, wildcards)
+    #    for barcode in get_units(units, wildcards)
+    #]
+    #return output_files
+
+    #output_files = lambda wildcards: [
+    #    "sentieon/sentieon/{sample}_{flowcell}_{lane}_{barcode}_{type}.output.txt"
+    #]
+    #return output_files
+
+    #output_files = expand(
+    #    "sentieon/sentieon/{{sample}}_{flowcell_lane_barcode}_{{type}}.output.txt",
+    #    flowcell_lane_barcode=["{}_{}_{}".format(unit.flowcell, unit.lane, unit.barcode) for unit in get_units(units, wildcards, wildcards.type)
+    #    ],
+    #)
+    #return output_files
