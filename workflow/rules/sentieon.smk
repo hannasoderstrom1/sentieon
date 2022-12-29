@@ -126,3 +126,38 @@ rule sentieon_realigner:
         "{rule}: Do stuff on sentieon/{rule}/{wildcards.sample}_{wildcards.type}.input"
     shell:
         "{params.sentieon} driver -t {threads} -r {input.reference} -i {input.bam} --algo Realigner -k {params.mills} {output}"
+
+
+rule sentieon_qualcal:
+    input:
+        bam="sentieon/realign/{sample}_{type}_REALIGNED.bam",
+        reference=config.get("sentieon", {}).get("reference", ""),
+    output:
+        "sentieon/qualcal/{sample}_{type}_RECAL_DATA.TABLE",
+    params:
+        extra=config.get("sentieon", {}).get("extra", ""),
+        sentieon="/sentieon-genomics-201911/bin/sentieon", #PATH TO SENTIEON?? Get from config
+        mills = "/databases/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz", # path in singularity... get from config
+        dbsnp = "/databases/Homo_sapiens_assembly38.dbsnp138.vcf.gz", # path in singularity... get from config
+    log:
+        "sentieon/qualcal/{sample}_{type}.output.log",
+    benchmark:
+        repeat(
+            "sentieon/qualcal/{sample}_{type}.output.benchmark.tsv",
+            config.get("sentieon", {}).get("benchmark_repeats", 1)
+        )
+    threads: config.get("sentieon", {}).get("threads", config["default_resources"]["threads"])
+    resources:
+        mem_mb=config.get("sentieon", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
+        mem_per_cpu=config.get("sentieon", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
+        partition=config.get("sentieon", {}).get("partition", config["default_resources"]["partition"]),
+        threads=config.get("sentieon", {}).get("threads", config["default_resources"]["threads"]),
+        time=config.get("sentieon", {}).get("time", config["default_resources"]["time"]),
+    container:
+        config.get("sentieon", {}).get("container", config["default_container"])
+    conda:
+        "../envs/sentieon.yaml"
+    message:
+        "{rule}: Do stuff on sentieon/{rule}/{wildcards.sample}_{wildcards.type}.input"
+    shell:
+        "{params.sentieon} driver -t {threads} -r {input.reference} -i {input.bam} --algo QualCal -k {params.mills} -k {params.dbsnp} {output}"

@@ -72,7 +72,8 @@ def compile_output_list(wildcards: snakemake.io.Wildcards):
     output_files = [
         #"sentieon/dedup/{}_{}.output.txt".format(sample, t)
         #"sentieon/dedup/{}_{}_DEDUP.bam".format(sample, t)
-        "sentieon/realign/{}_{}_REALIGNED.bam".format(sample, t)
+        #"sentieon/realign/{}_{}_REALIGNED.bam".format(sample, t)
+        "sentieon/qualcal/{}_{}_RECAL_DATA.TABLE".format(sample, t)
         for sample in get_samples(samples)
         for t in get_unit_types(units, sample)
     ]
