@@ -36,7 +36,7 @@ rule sentieon_bwa_mem:
     conda:
         "../envs/sentieon.yaml"
     message:
-        "{rule}: Do stuff on sentieon/{rule}/{wildcards.sample}_{wildcards.type}.input"
+        "{rule}: Align fastq files {input.reads} using Sentieon bwa mem against {input.reference}"
     shell:
         #"echo {input} > {output}"
         "{params.sentieon} bwa mem "
@@ -76,7 +76,7 @@ rule sentieon_dedup:
     conda:
         "../envs/sentieon.yaml"
     message:
-        "{rule}: Do stuff on sentieon/{rule}/{wildcards.sample}_{wildcards.type}.input"
+        "{rule}: Mark/remove duplicate reads in bam file {input} using Sentieon dedup algorithm"
     shell:
         #"echo {input} > {output}"
         "{params.sentieon} driver -t {threads} "
@@ -123,7 +123,7 @@ rule sentieon_realigner:
     conda:
         "../envs/sentieon.yaml"
     message:
-        "{rule}: Do stuff on sentieon/{rule}/{wildcards.sample}_{wildcards.type}.input"
+        "{rule}: Indel realignment of bam file {input.bam} using Sentieon realigner"
     shell:
         "{params.sentieon} driver -t {threads} -r {input.reference} -i {input.bam} --algo Realigner -k {params.mills} {output}"
 
@@ -158,6 +158,6 @@ rule sentieon_qualcal:
     conda:
         "../envs/sentieon.yaml"
     message:
-        "{rule}: Do stuff on sentieon/{rule}/{wildcards.sample}_{wildcards.type}.input"
+        "{rule}: Calculate recalibration table of {input.bam} using Sentieon QualCal algorithm"
     shell:
         "{params.sentieon} driver -t {threads} -r {input.reference} -i {input.bam} --algo QualCal -k {params.mills} -k {params.dbsnp} {output}"
