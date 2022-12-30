@@ -55,7 +55,6 @@ if config.get("trimmer_software", None) == "fastp_pe":
 else:
     merged_input = lambda wildcards: get_fastq_files(units, wildcards)
 
-
 if config.get("trimmer_software", "None") == "fastp_pe":
     alignment_input = lambda wilcards: [
         "prealignment/fastp_pe/{sample}_{flowcell}_{lane}_{barcode}_{type}_fastq1.fastq.gz",
@@ -68,6 +67,17 @@ elif config.get("trimmer_software", "None") == "None":
     ]
 
 
+tumor_sample = [
+    "{}".format(sample, t)
+    for sample in get_samples(samples)
+    for t in get_unit_types(units, sample) if t=='T'
+][0]
+normal_sample = [
+    "{}".format(sample, t)
+    for sample in get_samples(samples)
+    for t in get_unit_types(units, sample) if t=='N'
+][0]
+
 def compile_output_list(wildcards: snakemake.io.Wildcards):
     output_files = [
         #"sentieon/dedup/{}_{}.output.txt".format(sample, t)
@@ -77,5 +87,6 @@ def compile_output_list(wildcards: snakemake.io.Wildcards):
         for sample in get_samples(samples)
         for t in get_unit_types(units, sample)
     ]
+    output_files.append(f"sentieon/tnscope/{tumor_sample}_TNscope_tn.vcf")
     return output_files
 
