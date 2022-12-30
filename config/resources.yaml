@@ -10,3 +10,6 @@ default_resources:
 sentieon:
   threads: 20
   time: "24:00:00"
+
+tnscope:
+  threads: 40
