@@ -196,7 +196,7 @@ rule sentieon_tnscope:
         mem_mb=config.get("sentieon", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
         mem_per_cpu=config.get("sentieon", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
         partition=config.get("sentieon", {}).get("partition", config["default_resources"]["partition"]),
-        threads=config.get("sentieon", {}).get("threads", config["default_resources"]["threads"]),
+        threads=config.get("tnscope", {}).get("threads", config["default_resources"]["threads"]),
         time=config.get("sentieon", {}).get("time", config["default_resources"]["time"]),
     container:
         config.get("sentieon", {}).get("container", config["default_container"])
