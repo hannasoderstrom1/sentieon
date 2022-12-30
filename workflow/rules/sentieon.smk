@@ -10,13 +10,14 @@ __license__ = "GPL-3"
 rule sentieon_bwa_mem:
     input:
         reads=lambda wildcards: alignment_input(wildcards),
-        reference=config.get("sentieon", {}).get("reference", ""),
+        #reference=config.get("sentieon", {}).get("reference", ""),
     output:
         bam = "sentieon/bwa_mem/{sample}_{flowcell}_{lane}_{barcode}_{type}.bam",
         #"sentieon/bwa_mem/{sample}_{flowcell}_{lane}_{barcode}_{type}.output.txt",
     params:
         extra=config.get("sentieon", {}).get("extra", ""),
-        sentieon="/sentieon-genomics-201911/bin/sentieon", #PATH TO SENTIEON??
+        reference=config.get("sentieon", {}).get("reference", ""),
+        sentieon=config.get("sentieon", {}).get("sentieon", ""),
     log:
         "sentieon/bwa_mem/{sample}_{flowcell}_{lane}_{barcode}_{type}.output.log",
     benchmark:
@@ -36,12 +37,12 @@ rule sentieon_bwa_mem:
     conda:
         "../envs/sentieon.yaml"
     message:
-        "{rule}: Align fastq files {input.reads} using Sentieon bwa mem against {input.reference}"
+        "{rule}: Align fastq files {input.reads} using Sentieon bwa mem against {params.reference}"
     shell:
         #"echo {input} > {output}"
         "{params.sentieon} bwa mem "
             "-M -R '@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tPL:ILLUMINA' "
-            "-t {threads} {input.reference} {input.reads} "
+            "-t {threads} {params.reference} {input.reads} "
         "| {params.sentieon} util sort -o {output.bam} -t {threads} --sam2bam -i -"
 
 rule sentieon_dedup:
@@ -53,10 +54,9 @@ rule sentieon_dedup:
     output:
         "sentieon/dedup/{sample}_{type}_DEDUP.bam",
         "sentieon/dedup/{sample}_{type}_DEDUP.txt",
-        #"sentieon/dedup/{sample}_{type}.output.txt",
     params:
         extra=config.get("sentieon", {}).get("extra", ""),
-        sentieon="/sentieon-genomics-201911/bin/sentieon", #PATH TO SENTIEON?? Get from config instead??
+        sentieon=config.get("sentieon", {}).get("sentieon", ""),
     log:
         "sentieon/dedup/{sample}_{type}.output.log",
     benchmark:
@@ -97,13 +97,14 @@ rule sentieon_dedup:
 rule sentieon_realigner:
     input:
         bam="sentieon/dedup/{sample}_{type}_DEDUP.bam",
-        reference=config.get("sentieon", {}).get("reference", ""),
+        #reference=config.get("sentieon", {}).get("reference", ""),
     output:
         "sentieon/realign/{sample}_{type}_REALIGNED.bam",
     params:
         extra=config.get("sentieon", {}).get("extra", ""),
-        sentieon="/sentieon-genomics-201911/bin/sentieon", #PATH TO SENTIEON?? Get from config
-        mills = "/databases/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz", # path in singularity... get from config
+        reference=config.get("sentieon", {}).get("reference", ""),
+        sentieon=config.get("sentieon", {}).get("sentieon", ""),
+        mills=config.get("sentieon", {}).get("mills", ""),
     log:
         "sentieon/realign/{sample}_{type}.output.log",
     benchmark:
@@ -125,20 +126,21 @@ rule sentieon_realigner:
     message:
         "{rule}: Indel realignment of bam file {input.bam} using Sentieon realigner"
     shell:
-        "{params.sentieon} driver -t {threads} -r {input.reference} -i {input.bam} --algo Realigner -k {params.mills} {output}"
+        "{params.sentieon} driver -t {threads} -r {params.reference} -i {input.bam} --algo Realigner -k {params.mills} {output}"
 
 
 rule sentieon_qualcal:
     input:
         bam="sentieon/realign/{sample}_{type}_REALIGNED.bam",
-        reference=config.get("sentieon", {}).get("reference", ""),
+        #reference=config.get("sentieon", {}).get("reference", ""),
     output:
         "sentieon/qualcal/{sample}_{type}_RECAL_DATA.TABLE",
     params:
         extra=config.get("sentieon", {}).get("extra", ""),
-        sentieon="/sentieon-genomics-201911/bin/sentieon", #PATH TO SENTIEON?? Get from config
-        mills = "/databases/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz", # path in singularity... get from config
-        dbsnp = "/databases/Homo_sapiens_assembly38.dbsnp138.vcf.gz", # path in singularity... get from config
+        reference=config.get("sentieon", {}).get("reference", ""),
+        sentieon=config.get("sentieon", {}).get("sentieon", ""),
+        mills=config.get("sentieon", {}).get("mills", ""),
+        dbsnp=config.get("sentieon", {}).get("dbsnp", ""),
     log:
         "sentieon/qualcal/{sample}_{type}.output.log",
     benchmark:
@@ -160,4 +162,4 @@ rule sentieon_qualcal:
     message:
         "{rule}: Calculate recalibration table of {input.bam} using Sentieon QualCal algorithm"
     shell:
-        "{params.sentieon} driver -t {threads} -r {input.reference} -i {input.bam} --algo QualCal -k {params.mills} -k {params.dbsnp} {output}"
+        "{params.sentieon} driver -t {threads} -r {params.reference} -i {input.bam} --algo QualCal -k {params.mills} -k {params.dbsnp} {output}"
